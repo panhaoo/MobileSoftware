@@ -41,6 +41,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -67,7 +68,7 @@ public class NotesList extends ListActivity {
     private static final String[] PROJECTION = new String[] {
             NotePad.Notes._ID, // 0
             NotePad.Notes.COLUMN_NAME_TITLE, // 1
-            NotePad.Notes.COLUMN_NAME_CREATE_DATE, // 2
+            NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, // 2
     };
 
     /** The index of the title column */
@@ -124,7 +125,7 @@ public class NotesList extends ListActivity {
          */
 
         // The names of the cursor columns to display in the view, initialized to the title column
-        String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_CREATE_DATE } ;
+        String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE };
 
         // The view IDs that will display the cursor columns, initialized to the TextView in
         // noteslist_item.xml
@@ -145,7 +146,7 @@ public class NotesList extends ListActivity {
                 if( column == 2 ){
                     TextView time = (TextView) view;
                     Calendar c = Calendar.getInstance();
-                    long millions = cursor.getLong(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CREATE_DATE));
+                    long millions = cursor.getLong(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE));
                     c.setTimeInMillis(millions);
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     time.setText(sdf.format(c.getTime()));
@@ -166,14 +167,17 @@ public class NotesList extends ListActivity {
                 String selection = NotePad.Notes.COLUMN_NAME_TITLE + " Like ? ";
                 String[] selectionArgs = { query };
                 Cursor cursor = managedQuery(
-                        getIntent().getData(),            // Use the default content URI for the provider.
-                        PROJECTION,                       // Return the note ID and title for each note. and modifcation date
-                        selection,                        // 条件左边
-                        selectionArgs,                    // 条件右边
-                        NotePad.Notes.DEFAULT_SORT_ORDER  // Use the default sort order.
+                        getIntent().getData(),
+                        PROJECTION,
+                        selection,
+                        selectionArgs,
+                        NotePad.Notes.DEFAULT_SORT_ORDER
                 );
-                String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_CREATE_DATE };
-                int[] viewIDs = { android.R.id.text1 , R.id.text2 };
+                if(cursor.getCount() == 0){
+                    Toast.makeText(getApplicationContext(), "未搜索到相关内容！", Toast.LENGTH_SHORT).show();
+                }
+                String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE };
+                int[] viewIDs = { android.R.id.text1, android.R.id.text2 };
                 SimpleCursorAdapter adapter
                         = new SimpleCursorAdapter(
                         getApplicationContext(),
@@ -182,6 +186,21 @@ public class NotesList extends ListActivity {
                         dataColumns,
                         viewIDs
                 );
+                adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+                    @Override
+                    public boolean setViewValue(View view, Cursor cursor, int column) {
+                        if( column == 2 ){
+                            TextView time = (TextView) view;
+                            Calendar c = Calendar.getInstance();
+                            long millions = cursor.getLong(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE));
+                            c.setTimeInMillis(millions);
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            time.setText(sdf.format(c.getTime()));
+                            return true;
+                        }
+                        return false;
+                    }
+                });
                 setListAdapter(adapter);
                 searchView.clearFocus();
                 return true;
@@ -192,14 +211,14 @@ public class NotesList extends ListActivity {
                 String selection = NotePad.Notes.COLUMN_NAME_TITLE + " Like ? ";
                 String[] selectionArgs = { "%" + newText + "%" };
                 Cursor cursor = managedQuery(
-                        getIntent().getData(),            // Use the default content URI for the provider.
-                        PROJECTION,                       // Return the note ID and title for each note. and modifcation date
-                        selection,                        // 条件左边
-                        selectionArgs,                    // 条件右边
-                        NotePad.Notes.DEFAULT_SORT_ORDER  // Use the default sort order.
+                        getIntent().getData(),
+                        PROJECTION,
+                        selection,
+                        selectionArgs,
+                        NotePad.Notes.DEFAULT_SORT_ORDER
                 );
-                String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_CREATE_DATE };
-                int[] viewIDs = { android.R.id.text1 , R.id.text2 };
+                String[] dataColumns = { NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE };
+                int[] viewIDs = { android.R.id.text1 , android.R.id.text2 };
                 SimpleCursorAdapter adapter
                  = new SimpleCursorAdapter(
                         getApplicationContext(),
@@ -208,6 +227,21 @@ public class NotesList extends ListActivity {
                         dataColumns,
                         viewIDs
                 );
+                adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+                    @Override
+                    public boolean setViewValue(View view, Cursor cursor, int column) {
+                        if( column == 2 ){
+                            TextView time = (TextView) view;
+                            Calendar c = Calendar.getInstance();
+                            long millions = cursor.getLong(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE));
+                            c.setTimeInMillis(millions);
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            time.setText(sdf.format(c.getTime()));
+                            return true;
+                        }
+                        return false;
+                    }
+                });
                 setListAdapter(adapter);
                 return true;
             }
